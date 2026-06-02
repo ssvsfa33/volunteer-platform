@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>活动管理 - 志愿者管理平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .page-header h2 {
+            color: #333;
+        }
+
+        .page-header a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: #333;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tag {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .tag-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .tag-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="page-header">
+        <h2>⚙️ 活动管理</h2>
+        <a href="home.html">← 返回主页</a>
+    </div>
+
+    <!-- 添加/编辑表单 -->
+    <div class="card">
+        <h3 id="formTitle">➕ 新增活动</h3>
+        <form id="activityForm">
+            <input type="hidden" id="activityId">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>活动名称 *</label>
+                    <input type="text" id="title" placeholder="请输入活动名称" required>
+                </div>
+                <div class="form-group">
+                    <label>活动地点</label>
+                    <input type="text" id="location" placeholder="请输入活动地点">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>活动内容</label>
+                    <textarea id="content" placeholder="请输入活动内容"></textarea>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>开始时间</label>
+                    <input type="datetime-local" id="startTime">
+                </div>
+                <div class="form-group">
+                    <label>最大人数</label>
+                    <input type="number" id="maxNum" value="30" min="1">
+                </div>
+                <div class="form-group">
+                    <label>状态</label>
+                    <select id="status">
+                        <option value="0">未开始</option>
+                        <option value="1">进行中</option>
+                        <option value="2">已结束</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <button type="submit" class="btn btn-primary" id="submitBtn">保存</button>
+                <button type="button" class="btn btn-secondary" id="cancelBtn" style="display: none;">取消</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 活动列表 -->
+    <div class="card">
+        <h3>📋 活动列表</h3>
+        <div id="activityList">
+            <div class="empty-state">加载中...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = '/api/activity';
+    let editingId = null;
+
+    // 检查权限
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser || currentUser.role !== '1') {
+        alert('无权限访问！');
+        window.location.href = 'home.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', loadActivities);
+    document.getElementById('activityForm').addEventListener('submit', handleSubmit);
+    document.getElementById('cancelBtn').addEventListener('click', cancelEdit);
+
+    // 加载活动列表
+    async function loadActivities() {
+        try {
+            const response = await fetch(`${API_BASE}/list`);
+            const result = await response.json();
+
+            if (result.code === 200) {
+                renderActivities(result.data || []);
+            } else {
+                renderActivities(getMockData());
+            }
+        } catch (error) {
+            console.error('加载活动失败:', error);
+            renderActivities(getMockData());
+        }
+    }
+
+    // 模拟数据
+    function getMockData() {
+        return [
+            { id: 1, title: '社区环保志愿活动', content: '清理社区垃圾', location: '阳光社区', startTime: '2024-03-15 09:00', maxNum: 30, currentNum: 12, status: 1 },
+            { id: 2, title: '敬老院慰问活动', content: '陪伴老人聊天', location: '幸福敬老院', startTime: '2024-03-20 14:00', maxNum: 20, currentNum: 8, status: 0 }
+        ];
+    }
+
+    // 渲染活动列表
+    function renderActivities(activities) {
+        const container = document.getElementById('activityList');
+
+        if (!activities || activities.length === 0) {
+            container.innerHTML = '<div class="empty-state">暂无活动</div>';
+            return;
+        }
+
+        let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>活动名称</th>
+                            <th>地点</th>
+                            <th>人数</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+        activities.forEach(act => {
+            const statusMap = { 0: ['未开始', 'tag-pending'], 1: ['进行中', 'tag-active'], 2: ['已结束', 'tag-pending'] };
+            const [statusText, statusClass] = statusMap[act.status] || ['未知', 'tag-pending'];
+
+            html += `
+                    <tr>
+                        <td>${act.id}</td>
+                        <td><strong>${act.title}</strong></td>
+                        <td>${act.location || '-'}</td>
+                        <td>${act.currentNum || 0}/${act.maxNum}</td>
+                        <td><span class="tag ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn btn-success btn-sm" onclick="editActivity(${act.id})">✏️ 编辑</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteActivity(${act.id}, '${act.title}')">🗑️ 删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // 提交表单
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        const activityData = {
+            title: document.getElementById('title').value,
+            content: document.getElementById('content').value,
+            location: document.getElementById('location').value,
+            startTime: document.getElementById('startTime').value,
+            maxNum: parseInt(document.getElementById('maxNum').value),
+            status: parseInt(document.getElementById('status').value),
+            currentNum: 0
+        };
+
+        try {
+            let url = `${API_BASE}/add`;
+            let method = 'POST';
+
+            if (editingId) {
+                url = `${API_BASE}/update`;
+                activityData.id = editingId;
+            }
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(activityData)
+            });
+
+            const result = await response.json();
+
+            if (result.code === 200) {
+                showToast(editingId ? '修改成功！' : '添加成功！', 'success');
+                resetForm();
+                loadActivities();
+            } else {
+                showToast('操作失败', 'error');
+            }
+        } catch (error) {
+            showToast('网络错误', 'error');
+        }
+    }
+
+    // 编辑活动
+    async function editActivity(id) {
+        try {
+            const response = await fetch(`${API_BASE}/${id}`);
+            const result = await response.json();
+
+            if (result.code === 200 && result.data) {
+                const act = result.data;
+                editingId = id;
+
+                document.getElementById('formTitle').textContent = '✏️ 编辑活动';
+                document.getElementById('submitBtn').textContent = '更新';
+                document.getElementById('cancelBtn').style.display = 'inline-block';
+
+                document.getElementById('title').value = act.title || '';
+                document.getElementById('content').value = act.content || '';
+                document.getElementById('location').value = act.location || '';
+                document.getElementById('startTime').value = act.startTime || '';
+                document.getElementById('maxNum').value = act.maxNum || 30;
+                document.getElementById('status').value = act.status || 0;
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        } catch (error) {
+            showToast('获取活动信息失败', 'error');
+        }
+    }
+
+    // 删除活动
+    async function deleteActivity(id, title) {
+        if (!confirm(`确定要删除「${title}」吗？`)) return;
+
+        try {
+            const response = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+            const result = await response.json();
+
+            if (result.code === 200) {
+                showToast('删除成功！', 'success');
+                loadActivities();
+            } else {
+                showToast('删除失败', 'error');
+            }
+        } catch (error) {
+            showToast('网络错误', 'error');
+        }
+    }
+
+    function cancelEdit() {
+        resetForm();
+    }
+
+    function resetForm() {
+        editingId = null;
+        document.getElementById('formTitle').textContent = '➕ 新增活动';
+        document.getElementById('submitBtn').textContent = '保存';
+        document.getElementById('cancelBtn').style.display = 'none';
+        document.getElementById('activityForm').reset();
+    }
+
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+</script>
+</body>
+</html>
